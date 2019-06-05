@@ -22,14 +22,17 @@ private:
     int pOffset;
     //std::vector<int> freePos;
     bool* valid;
+    bool* inPair;
     double rate;
+    double t; //see the paper
 
     int faceCount;
     int vertexCount;
 
     void computeQ();
     void computeValidPairs();
-    int addVertex(const Vertex& v);
+    int addVertex(const Vec3& p);
+    int addPair(int v1, int v2);
     void delVertex(int index);
     void addFace(const Face& f);
     void update(const Pair& pair);

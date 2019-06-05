@@ -3,14 +3,16 @@
 
 #include <set>
 #include <vector>
+
+#include "pair.hpp"
 #include "mat4.hpp"
 #include "vec3.hpp"
 
 class Vertex {
 private:
-    Vec3 p;
 
 public:
+    Vec3 p;
     Mat4 Q;
 
     std::vector<int> neighbor;
@@ -21,9 +23,9 @@ public:
     void addNeighbor(int index);
     void delNeighbor(int index);
     void computeQ(const Vertex* vertices);
-    void setPos(const Vec3& pos);
+    void setPos(const Vec3& pos) { p = pos; }
     bool hasPair(int index, const Pair* pairs) const;
-    void addPair(int index, const Pair* pairs);
+    void addPair(int index);
     void delPair(int index);
 };
 

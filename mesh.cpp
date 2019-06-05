@@ -11,10 +11,13 @@ Mesh::Mesh() {
     vOffset = 1;
     pOffset = 1;
     rate = 1.0;
+    t = 0;
     vertices = new Vertex[MAX_VERTEX];
     pairs = new Pair[MAX_PAIR];
     valid = new bool[MAX_VERTEX];
+    inPair = new bool[MAX_VERTEX];
     memset(valid, 0, MAX_VERTEX * sizeof(bool));
+    memset(inPair, 0, MAX_VERTEX * sizeof(bool));
 }
 
 void Mesh::load(const std::string& path) {
@@ -30,8 +33,8 @@ void Mesh::load(const std::string& path) {
         if (type == 'v') {
             double x = 0, y = 0, z = 0;
             sscanf(line, "%c%lf%lf%lf", &type, &x, &y, &z);
-            Vertex v(x, y, z);
-            addVertex(v);
+            Vec3 p(x, y, z);
+            addVertex(p);
         }
         else if (type == 'f'){
             int indices[3];
@@ -50,9 +53,9 @@ void Mesh::save(const std::string& path) {
 
 }
 
-int Mesh::addVertex(const Vertex& v) {
+int Mesh::addVertex(const Vec3& p) {
     int index = vOffset;
-    vertices[vOffset] = v;
+    vertices[vOffset].setPos(p);
     valid[vOffset] = true;
     ++vOffset;
     ++vertexCount;
@@ -61,6 +64,7 @@ int Mesh::addVertex(const Vertex& v) {
 
 void Mesh::delVertex(int index) {
     valid[index] = false;
+    --vertexCount;
 }
 
 void Mesh::addFace(const Face& f) {
@@ -73,6 +77,36 @@ void Mesh::addFace(const Face& f) {
         }
     }
     ++faceCount;
+}
+
+int Mesh::addPair(int v1, int v2) {
+    int pairIndex = pOffset;
+    pairs[pOffset].v[0] = v1;
+    pairs[pOffset].v[1] = v2;
+    pairs[pOffset].index = pairIndex;
+    ++pOffset;
+    return pairIndex;
+}
+
+void Mesh::computeQ() {
+    for (int i = 0; i < vertexCount; ++i) {
+        vertices[i].computeQ(vertices);
+    }
+}
+
+void Mesh::computeValidPairs() {
+    for (int index = 0; index < vertexCount; ++index) {
+        for (int i = 0; i < vertices[index].neighbor.size(); ++i) {
+            int neighborIndex = vertices[index].neighbor[i];
+            if (!inPair[neighborIndex]) {
+                int pairIndex = addPair(index, neighborIndex);
+                pairs[pairIndex].updateOptiPos(vertices);
+                pairs[pairIndex].updateCost(vertices);
+            }
+        }
+        // there may also be |v1 - v2| < t
+        inPair[index] = true;
+    }
 }
 
 void Mesh::simplify() {
@@ -157,12 +191,13 @@ void Mesh::update(const Pair& pair) {
             heap.remove(pairs[pairIndex]);
         }
         else {
-            vertices[newIndex].addPair(pairIndex, pairs);
+            vertices[newIndex].addPair(pairIndex);
         }
     }
-    //update cost 
+    //update cost & optimal pos
     for (int i = 0; i < vertices[newIndex].pairs.size(); ++i) {
         int pairIndex = vertices[newIndex].pairs[i];
+        pairs[pairIndex].updateOptiPos(vertices);
         pairs[pairIndex].updateCost(vertices);
         heap.update(pairs[pairIndex]);
     }
