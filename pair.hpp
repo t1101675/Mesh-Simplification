@@ -70,8 +70,11 @@ public:
         Vec4 y(optPos, 1);
         Mat4 A = vertices[v[0]].Q + vertices[v[1]].Q;
         Vec4 Ay = A * y;
-        cost = y.dot(Ay);
-        
+        cost = y.dot(Ay);   
+    }
+
+    friend bool operator< (const Pair& p1, const Pair& p2) {
+        return p1.cost < p2.cost;
     }
 };
 

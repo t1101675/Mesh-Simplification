@@ -112,11 +112,11 @@ void Mesh::computeValidPairs() {
 void Mesh::simplify() {
     computeQ();
     computeValidPairs();
-    heap.build(pairs);
+    heap.build(pairs, pOffset);
 
     int nowCount = faceCount;
     while (nowCount > int(rate * faceCount)) {
-        Pair minPair = heap.top();
+        Pair minPair = pairs[heap.top()];
         heap.del();
         update(minPair);
         nowCount -= 2;
