@@ -149,11 +149,18 @@ void Mesh::computeValidPairs() {
 
 void Mesh::simplify() {
     computeQ();
+    std::cout << "[info] Compute Q end" << std::endl;
     computeValidPairs();
+    std::cout << "[info] Compute valid pairs end" << std::endl;
     heap.build(pairs, pOffset);
+    std::cout << "[info] Heap build end" << std::endl;
 
     int nowCount = faceCount;
+    int iter = 0;
     while (nowCount > int(rate * faceCount)) {
+        if (iter % 100 == 0) {
+            std::cout << "[info] Iter: " << iter << " count: " << nowCount << std::endl;
+        }
         int pairIndex = heap.top();
         if (pairIndex < 0) {
             break;
@@ -162,6 +169,7 @@ void Mesh::simplify() {
         heap.del();
         update(minPair);
         nowCount -= 2;
+        iter++;
     }
 }
 
