@@ -1,8 +1,9 @@
 #include "vec4.hpp"
 #include "mat4.hpp"
+#include "pair.hpp"
 #include "vertex.h"
 
-Vertex::Vertex(double x = 0, double y = 0, double z = 0): p(x, y, z) {
+Vertex::Vertex(double x, double y, double z): p(x, y, z) {
 
 }
 
@@ -39,6 +40,7 @@ bool Vertex::hasPair(int index, const Pair* pairs) const {
             return true;
         }
     }
+    return false;
 }
 
 void Vertex::addPair(int index) {

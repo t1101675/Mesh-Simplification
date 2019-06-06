@@ -3,10 +3,10 @@
 
 #include <set>
 #include <vector>
-
-#include "pair.hpp"
 #include "mat4.hpp"
 #include "vec3.hpp"
+
+class Pair;
 
 class Vertex {
 private:
