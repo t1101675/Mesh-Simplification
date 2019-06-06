@@ -66,31 +66,50 @@ private:
     }
 
 public:
+    Heap() {
+        this->pairs = nullptr;
+        this->n = 0;
+        this->pairNum = 0;
+        data = new HeapNode[MAX_HEAP_NODE];
+    }
+    ~Heap() {
+        delete[] data;
+    }
     void build(Pair* pairs, int n) {
         this->pairs = pairs;
         this->n = n;
         this->pairNum = n;
-        data = new HeapNode[MAX_HEAP_NODE];
         for (int i = 0; i < n; ++i) {
             data[i].index = i;
             data[i].exist = true;
+        }
+        for (int i = 0; i < n; ++i) {
+            pairs[data[i].index].heapIndex = i;
         }
         for (int i = (n - 2) >> 1; i >= 0; --i) {
             down(i);
         }
     }
     int add(const Pair& pair) {
+        assert(0 < n);
+        assert(n < MAX_HEAP_NODE);
         data[n].index = pair.index;
         data[n].exist = true;
         ++n;
         return up(n - 1);
     }
     void del() {
+        assert(n - 1 < MAX_HEAP_NODE);
+        if (data[0].exist) {
+            --pairNum;
+        }
         data[0] = data[--n];
         down(0);
     }
     void remove(const Pair& pair) {
+        assert(data[pair.heapIndex].exist == true);
         data[pair.heapIndex].exist = false;
+        --pairNum;
     }
     void update(Pair& pair) {
         data[pair.heapIndex].exist = false;

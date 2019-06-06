@@ -17,9 +17,8 @@ bool Vertex::isNeighbor(int index) const {
 }
 
 void Vertex::addNeighbor(int index) {
-    if (!isNeighbor(index)) {
-        neighbor.push_back(index);
-    }
+    //assume index is not in neighbor
+    neighbor.push_back(index);
 }
 
 void Vertex::delNeighbor(int index) {
@@ -33,9 +32,9 @@ void Vertex::delNeighbor(int index) {
 }
 
 bool Vertex::hasPair(int index, const Pair* pairs) const {
-    for (int i = 0; i < neighbor.size(); ++i) {
-        if ((pairs[index].v[0] == pairs[neighbor[i]].v[0]) 
-         && (pairs[index].v[1] == pairs[neighbor[i]].v[1])) 
+    for (int i = 0; i < this->pairs.size(); ++i) {
+        if ((pairs[index].v[0] == pairs[this->pairs[i]].v[0]) 
+         && (pairs[index].v[1] == pairs[this->pairs[i]].v[1])) 
         {
             return true;
         }
@@ -44,6 +43,7 @@ bool Vertex::hasPair(int index, const Pair* pairs) const {
 }
 
 void Vertex::addPair(int index) {
+    //assume this pair is not in pairs
     pairs.push_back(index);
 }
 
@@ -61,6 +61,7 @@ void Vertex::computeQ(const Vertex* vertices) {
     for (int i = 0; i < neighbor.size(); ++i) {
         for (int j = i + 1; j < neighbor.size(); ++i) {
             if (vertices[neighbor[i]].isNeighbor(neighbor[j])) {
+                //form a triangle
                 Vec3 norm = (vertices[neighbor[i]].p - p).cross(vertices[neighbor[j]].p - p).normal();
                 double w = -(p.dot(norm));
                 Vec4 v4(norm, w);

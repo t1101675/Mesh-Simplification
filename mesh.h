@@ -20,14 +20,15 @@ private:
     Heap heap;
     int vOffset;
     int pOffset;
+    int faceCount;
+    int vertexCount;
+    double t; //see the paper
+    double rate;
     //std::vector<int> freePos;
     bool* valid;
     bool* inPair;
-    double rate;
-    double t; //see the paper
+    bool* inFace;
 
-    int faceCount;
-    int vertexCount;
 
     void computeQ();
     void computeValidPairs();
@@ -39,6 +40,7 @@ private:
 
 public:
     Mesh();
+    ~Mesh();
     void load(const std::string& path);
     void save(const std::string& path);
     void setRate(double rate) { this->rate = rate; }
