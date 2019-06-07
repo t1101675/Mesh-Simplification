@@ -3,10 +3,8 @@
 
 #include <assert.h>
 
+#include "utils.hpp"
 #include "pair.hpp"
-
-
-const int MAX_HEAP_NODE = 2000000;
 
 struct HeapNode {
     int index;

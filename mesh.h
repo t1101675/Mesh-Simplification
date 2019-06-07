@@ -4,20 +4,19 @@
 #include <string>
 #include <vector>
 
+#include "utils.hpp"
 #include "vertex.h"
 #include "face.hpp"
 #include "heap.hpp"
 #include "pair.hpp"
 #include "mat4.hpp"
-
-const int MAX_VERTEX = 100000;
-const int MAX_PAIR = 200000;
+#include "map.hpp"
 
 class Mesh {
 private:
     Vertex* vertices;
     Pair* pairs;
-    Face* faces;
+    Map faceMap;
     Heap heap;
     int vOffset;
     int pOffset;

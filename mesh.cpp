@@ -6,12 +6,13 @@
 #include <memory.h>
 #include <string>
 #include <sstream>
+
+
 #include "mesh.h"
 
 Mesh::Mesh() {
     vertices = new Vertex[MAX_VERTEX];
     pairs = new Pair[MAX_PAIR];
-    faces = new Face[3 * MAX_VERTEX];
     vOffset = 1;
     pOffset = 0;
     faceCount = 0;
@@ -32,7 +33,6 @@ Mesh::~Mesh() {
     if (inFace) delete[] inFace;
     if (vertices) delete[] vertices;
     if (pairs) delete[] pairs;
-    if (faces) delete[] faces;
 }
 
 void Mesh::load(const std::string& path) {
@@ -89,7 +89,14 @@ void Mesh::save(const std::string& path) {
                     if (!inFace[neiIndex1] && !inFace[neiIndex2]) {
                         if (vertices[neiIndex1].isNeighbor(neiIndex2)) {
                             ++fNum;
-                            sstream << "f " << vertices[index].newIndex << " " << vertices[neiIndex1].newIndex << " " << vertices[neiIndex2].newIndex << std::endl;
+                            Face realFace;
+                            int b = faceMap.get(Face(index, neiIndex1, neiIndex2), realFace);
+                            if (b) {
+                                sstream << "f " << vertices[realFace.indices[0]].newIndex << " " << vertices[realFace.indices[1]].newIndex << " " << vertices[realFace.indices[2]].newIndex << std::endl;
+                            }
+                            else {
+                                sstream << "f " << vertices[index].newIndex << " " << vertices[neiIndex1].newIndex << " " << vertices[neiIndex2].newIndex << std::endl;
+                            }
                         }
                     }
                 }
@@ -130,6 +137,7 @@ void Mesh::addFace(const Face& f) {
             }
         }
     }
+    faceMap.insert(f);
     ++faceCount;
 }
 
@@ -197,11 +205,28 @@ void Mesh::update(const Pair& pair) {
     //optimize: use v[0] to store new vertex
     Vec3 newPos = pair.optimalPos();
     int newIndex = pair.v[0];
-    //std::cout << pair.index << std::endl;
-    //std::cout << vertices[newIndex].p.x << " " << vertices[newIndex].p.y << " " << vertices[newIndex].p.z << std::endl;
     vertices[newIndex].setPos(newPos);
-    //std::cout << vertices[newIndex].p.x << " " << vertices[newIndex].p.y << " " << vertices[newIndex].p.z << std::endl;
     vertices[newIndex].Q += vertices[pair.v[1]].Q;
+
+    /* update faces*/
+    for (int i = 0; i < vertices[pair.v[1]].neighbor.size(); ++i) {
+        for (int j = i + 1; j < vertices[pair.v[1]].neighbor.size(); ++j) {
+            int neiIndex1 = vertices[pair.v[1]].neighbor[i];
+            int neiIndex2 = vertices[pair.v[1]].neighbor[j];
+            Face realFace;
+            int b = faceMap.get(Face(pair.v[1], neiIndex1, neiIndex2), realFace);
+            if (b) {
+                int bb = faceMap.remove(realFace);
+                assert(bb);
+                if (realFace.indices[0] == pair.v[1]) realFace.indices[0] = pair.v[0];
+                else if (realFace.indices[1] == pair.v[1]) realFace.indices[1] = pair.v[0];
+                else if (realFace.indices[2] == pair.v[1]) realFace.indices[2] = pair.v[0];
+                else assert(0 == 1);
+                faceMap.insert(realFace);
+            }
+        }
+    }
+
 
     /* get new neighbor */
     for (int i = 0; i < vertices[pair.v[1]].neighbor.size(); ++i) {
