@@ -12,6 +12,11 @@ public:
     Mat4() {
         for (int i = 0; i < 16; ++i) data[i] = 0.0;
     }
+    Mat4& operator=(const Mat4& m) {
+        if (this == &m) return *this;
+        for (int i = 0; i < 16; ++i) data[i] = m.data[i];
+        return *this;
+    }
 
     Mat4(const Vec4& v4) { 
         set(v4); 
@@ -20,7 +25,7 @@ public:
     friend Mat4 operator+(const Mat4& m1, const Mat4& m2) {
         Mat4 m;
         for (int i = 0; i < 16; ++i) {
-            m.data[i] = m1.data[i] + m2.data[2];
+            m.data[i] = m1.data[i] + m2.data[i];
         }
         return m;
     }

@@ -5,6 +5,9 @@ class Face {
 private:
 public:
     int indices[3];
+    Face() {
+        indices[0] = indices[1] = indices[2] = 0;
+    }
     Face(const int indices[]) {
         this->indices[0] = indices[0];
         this->indices[1] = indices[1];

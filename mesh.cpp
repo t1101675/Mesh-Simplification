@@ -4,13 +4,15 @@
 #include <stdio.h>
 #include <set>
 #include <memory.h>
-
+#include <string>
+#include <sstream>
 #include "mesh.h"
 
 Mesh::Mesh() {
     vertices = new Vertex[MAX_VERTEX];
     pairs = new Pair[MAX_PAIR];
-    vOffset = 0;
+    faces = new Face[3 * MAX_VERTEX];
+    vOffset = 1;
     pOffset = 0;
     faceCount = 0;
     vertexCount = 0;    
@@ -30,6 +32,7 @@ Mesh::~Mesh() {
     if (inFace) delete[] inFace;
     if (vertices) delete[] vertices;
     if (pairs) delete[] pairs;
+    if (faces) delete[] faces;
 }
 
 void Mesh::load(const std::string& path) {
@@ -40,7 +43,9 @@ void Mesh::load(const std::string& path) {
     }
     char line[1000];
     char type;
-    while (fin >> line) {
+    while (!fin.eof()) {
+        fin.getline(line, 1000);
+        //std::cout << line << std::endl;
         type = line[0];
         if (type == 'v') {
             double x = 0, y = 0, z = 0;
@@ -58,19 +63,24 @@ void Mesh::load(const std::string& path) {
             //type == '#'
         }
     }
+    fin.close();
 }
 
 void Mesh::save(const std::string& path) {
     std::ofstream fout(path);
+    std::string file;
+    std::stringstream sstream;
     int vNum = 0, fNum = 0;
-    for (int index = 0; index < vOffset; ++index) {
+    for (int index = 1; index < vOffset; ++index) {
         if (valid[index]) {
-            fout << "v " << vertices[index].p.x << " " << vertices[index].p.y << " " << vertices[index].p.z << std::endl;
+            vertices[index].newIndex = vNum + 1;
+            sstream << "v " << vertices[index].p.x << " " << vertices[index].p.y << " " << vertices[index].p.z << std::endl;
             ++vNum;
         }
     }
+    std::cout << vNum << " " << vertexCount << std::endl;
     assert(vNum == vertexCount);
-    for (int index = 0; index < vOffset; ++index) {
+    for (int index = 1; index < vOffset; ++index) {
         if (valid[index]) {
             for (int i = 0; i < vertices[index].neighbor.size(); ++i) {
                 int neiIndex1 = vertices[index].neighbor[i];
@@ -79,7 +89,7 @@ void Mesh::save(const std::string& path) {
                     if (!inFace[neiIndex1] && !inFace[neiIndex2]) {
                         if (vertices[neiIndex1].isNeighbor(neiIndex2)) {
                             ++fNum;
-                            fout << "f " << index << " " << neiIndex1 << " " << neiIndex2 << std::endl;
+                            sstream << "f " << vertices[index].newIndex << " " << vertices[neiIndex1].newIndex << " " << vertices[neiIndex2].newIndex << std::endl;
                         }
                     }
                 }
@@ -87,8 +97,9 @@ void Mesh::save(const std::string& path) {
             inFace[index] = true;
         }
     }
-    fout.seekp(0, std::ios::beg);
     fout << "# " << vNum << " vertices, " << fNum << " faces" << std::endl;
+    fout << sstream.str();
+    fout.close();
 }
 
 int Mesh::addVertex(const Vec3& p) {
@@ -97,10 +108,15 @@ int Mesh::addVertex(const Vec3& p) {
     valid[vOffset] = true;
     ++vOffset;
     ++vertexCount;
+    assert(vOffset < MAX_VERTEX);
     return index;
 }
 
 void Mesh::delVertex(int index) {
+    if (valid[index] != true) {
+        std::cout << index << std::endl;
+    }
+    assert(valid[index] == true);
     valid[index] = false;
     --vertexCount;
 }
@@ -122,18 +138,22 @@ int Mesh::addPair(int v1, int v2) {
     pairs[pOffset].v[0] = v1;
     pairs[pOffset].v[1] = v2;
     pairs[pOffset].index = pairIndex;
+    vertices[v1].addPair(pairIndex);
+    vertices[v2].addPair(pairIndex);
     ++pOffset;
+    assert(pOffset < MAX_PAIR);
     return pairIndex;
 }
 
 void Mesh::computeQ() {
-    for (int index = 0; index < vertexCount; ++index) {
+    std::cout << vertexCount << std::endl;
+    for (int index = 1; index < vOffset; ++index) {
         vertices[index].computeQ(vertices);
     }
 }
 
 void Mesh::computeValidPairs() {
-    for (int index = 0; index < vertexCount; ++index) {
+    for (int index = 1; index < vOffset; ++index) {
         for (int i = 0; i < vertices[index].neighbor.size(); ++i) {
             int neighborIndex = vertices[index].neighbor[i];
             if (!inPair[neighborIndex]) {
@@ -157,7 +177,7 @@ void Mesh::simplify() {
 
     int nowCount = faceCount;
     int iter = 0;
-    while (nowCount > int(rate * faceCount)) {
+    while ((double)nowCount > (double)faceCount * rate) {
         if (iter % 100 == 0) {
             std::cout << "[info] Iter: " << iter << " count: " << nowCount << std::endl;
         }
@@ -177,17 +197,13 @@ void Mesh::update(const Pair& pair) {
     //optimize: use v[0] to store new vertex
     Vec3 newPos = pair.optimalPos();
     int newIndex = pair.v[0];
+    //std::cout << pair.index << std::endl;
+    //std::cout << vertices[newIndex].p.x << " " << vertices[newIndex].p.y << " " << vertices[newIndex].p.z << std::endl;
     vertices[newIndex].setPos(newPos);
+    //std::cout << vertices[newIndex].p.x << " " << vertices[newIndex].p.y << " " << vertices[newIndex].p.z << std::endl;
     vertices[newIndex].Q += vertices[pair.v[1]].Q;
 
     /* get new neighbor */
-    //std::set<int> newNeighbor;
-    //for (int i = 0; i < vertices[pair.v[0]].neighbor.size(); ++i) {
-    //    int neighborIndex = vertices[pair.v[0]].neighbor[i];
-    //    if (neighborIndex != pair.v[1]) {
-    //        newNeighbor.insert(neighborIndex);
-    //    }
-    //}
     for (int i = 0; i < vertices[pair.v[1]].neighbor.size(); ++i) {
         int neighborIndex = vertices[pair.v[1]].neighbor[i];
         if (neighborIndex != pair.v[0]) {
@@ -199,33 +215,17 @@ void Mesh::update(const Pair& pair) {
         }
     }
     vertices[newIndex].delNeighbor(pair.v[1]);
-    //for (int i = 0; i < vertices[newIndex].neighbor.size(); ++i) {
-    //    int neighborIndex = vertices[newIndex].neighbor[i];
-    //    vertices[neighborIndex].delNeighbor(pair.v[1]);
-    //    if (vertices[neighborIndex].isNeighbor)
-    //    vertices[neighborIndex].addNeighbor(newIndex);
-    //}
-    //std::set<int>::iterator iter;
-    ////for (iter = newNeighbor.begin(); iter != newNeighbor.end(); ++iter) {
-    ////    vertices[newIndex].addNeighbor(*iter);
-    ////}
-    //for (iter = newNeighbor.begin(); iter != newNeighbor.end(); ++iter) {
-    //    vertices[*iter].delNeighbor(pair.v[0]);
-    //    vertices[*iter].delNeighbor(pair.v[1]);
-    //    vertices[*iter].addNeighbor(newIndex);
-    //    //vertices[*iter].computeQ(vertices);
-    //}
-
     /*update pairs*/    
     //add v[1] pairs to new vertex(v[0])
     for (int i = 0; i < vertices[pair.v[1]].pairs.size(); ++i) {
         int pairIndex = vertices[pair.v[1]].pairs[i];
+
         if (pairs[pairIndex].v[0] == pair.v[1]) {
             if (pairs[pairIndex].v[1] == pair.v[0]) {
                 //pair between v[0] and v[1]
                 assert(pairIndex == pair.index);
                 vertices[newIndex].delPair(pairIndex);
-                heap.remove(pairs[pairIndex]);
+                //heap.remove(pairs[pairIndex]); //this pair has already been removed
                 continue;
             }
             else {
@@ -233,11 +233,11 @@ void Mesh::update(const Pair& pair) {
             }
         }
         else {
+            assert(pairs[pairIndex].v[1] == pair.v[1]);
             if (pairs[pairIndex].v[0] == pair.v[0]) {
                 //pair between v[0] and v[1]
                 assert(pairIndex == pair.index);
                 vertices[newIndex].delPair(pairIndex);
-                heap.remove(pairs[pairIndex]);
                 continue;
             }
             else {
@@ -246,11 +246,18 @@ void Mesh::update(const Pair& pair) {
         }
         if (vertices[newIndex].hasPair(pairIndex, pairs)) {
             heap.remove(pairs[pairIndex]);
+            if (pairs[pairIndex].v[0] == pair.v[0]) {
+                vertices[pairs[pairIndex].v[1]].delPair(pairIndex);
+            }
+            else {
+                vertices[pairs[pairIndex].v[0]].delPair(pairIndex);
+            }
         }
         else {
             vertices[newIndex].addPair(pairIndex);
         }
     }
+
     //update cost & optimal pos
     for (int i = 0; i < vertices[newIndex].pairs.size(); ++i) {
         int pairIndex = vertices[newIndex].pairs[i];
@@ -258,7 +265,5 @@ void Mesh::update(const Pair& pair) {
         pairs[pairIndex].updateCost(vertices);
         heap.update(pairs[pairIndex]);
     }
-
-    //heap.remove(pair);
     delVertex(pair.v[1]);
 }

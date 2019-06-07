@@ -14,6 +14,7 @@ private:
 public:
     Vec3 p;
     Mat4 Q;
+    int newIndex;
 
     std::vector<int> neighbor;
     std::vector<int> pairs; //pair index

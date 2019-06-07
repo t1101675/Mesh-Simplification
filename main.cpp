@@ -10,8 +10,12 @@ int main(int argc, char** argv) {
     }
     Mesh mesh;
     mesh.load(argv[1]);
+    std::cout << "[info] Load end" << std::endl;
     mesh.setRate(atof(argv[3]));
+    std::cout << "[info] Set rate end" << std::endl;
     mesh.simplify();
+    std::cout << "[info] Simplify end" << std::endl;
     mesh.save(argv[2]);
+    std::cout << "[info] Saved to " << argv[2] << std::endl;
     return 0;
 }

@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "vec4.hpp"
 #include "mat4.hpp"
 #include "pair.hpp"
@@ -29,12 +31,13 @@ void Vertex::delNeighbor(int index) {
             return;
         }
     }
+    assert(0 == 1);
 }
 
 bool Vertex::hasPair(int index, const Pair* pairs) const {
     for (int i = 0; i < this->pairs.size(); ++i) {
-        if ((pairs[index].v[0] == pairs[this->pairs[i]].v[0]) 
-         && (pairs[index].v[1] == pairs[this->pairs[i]].v[1])) 
+        if (((pairs[index].v[0] == pairs[this->pairs[i]].v[0]) && (pairs[index].v[1] == pairs[this->pairs[i]].v[1])) 
+         || ((pairs[index].v[0] == pairs[this->pairs[i]].v[1]) && (pairs[index].v[1] == pairs[this->pairs[i]].v[0]))) 
         {
             return true;
         }
@@ -55,11 +58,12 @@ void Vertex::delPair(int index) {
             return;
         }
     }
+    assert(0 == 1);
 }
 
 void Vertex::computeQ(const Vertex* vertices) {
     for (int i = 0; i < neighbor.size(); ++i) {
-        for (int j = i + 1; j < neighbor.size(); ++i) {
+        for (int j = i + 1; j < neighbor.size(); ++j) {
             if (vertices[neighbor[i]].isNeighbor(neighbor[j])) {
                 //form a triangle
                 Vec3 norm = (vertices[neighbor[i]].p - p).cross(vertices[neighbor[j]].p - p).normal();

@@ -11,12 +11,13 @@
 #include "mat4.hpp"
 
 const int MAX_VERTEX = 100000;
-const int MAX_PAIR = 100000;
+const int MAX_PAIR = 200000;
 
 class Mesh {
 private:
     Vertex* vertices;
     Pair* pairs;
+    Face* faces;
     Heap heap;
     int vOffset;
     int pOffset;
