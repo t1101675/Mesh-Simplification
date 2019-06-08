@@ -22,6 +22,12 @@ public:
       memset(lazy, 0, MAX_FACE * sizeof(bool));
     }
 
+    ~Map() {
+        if (table) delete[] table;
+        if (fill) delete[] fill;
+        if (lazy) delete[] lazy;
+    }
+
     /*散列函数*/
     unsigned int hash(const Face &face) {
         unsigned long long int a1 = face.indices[0] + face.indices[1] + face.indices[2];

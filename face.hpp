@@ -1,6 +1,10 @@
 #ifndef FACE_H_
 #define FACE_H_
 
+#include "vec3.hpp"
+#include "vertex.h"
+
+
 class Face {
 private:
 public:
@@ -34,6 +38,14 @@ public:
         indices[1] = face.indices[1];
         indices[2] = face.indices[2];
         return *this;
+    }
+
+    Vec3 norm(const Vertex* vertices) const {
+        Vec3 v0 = vertices[indices[0]].p;
+        Vec3 v1 = vertices[indices[1]].p;
+        Vec3 v2 = vertices[indices[2]].p;
+
+        return (v1 - v0).cross(v2 - v0).normal();
     }
 
     friend bool operator==(const Face& face1, const Face& face2) {

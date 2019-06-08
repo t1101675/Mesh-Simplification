@@ -45,7 +45,6 @@ void Mesh::load(const std::string& path) {
     char type;
     while (!fin.eof()) {
         fin.getline(line, 1000);
-        //std::cout << line << std::endl;
         type = line[0];
         if (type == 'v') {
             double x = 0, y = 0, z = 0;
@@ -94,9 +93,10 @@ void Mesh::save(const std::string& path) {
                             if (b) {
                                 sstream << "f " << vertices[realFace.indices[0]].newIndex << " " << vertices[realFace.indices[1]].newIndex << " " << vertices[realFace.indices[2]].newIndex << std::endl;
                             }
-                            else {
-                                sstream << "f " << vertices[index].newIndex << " " << vertices[neiIndex1].newIndex << " " << vertices[neiIndex2].newIndex << std::endl;
-                            }
+                            //else {
+                            //    std::cout << index << " " << neiIndex1 << " " << neiIndex2 << std::endl;
+                            //    sstream << "f " << vertices[index].newIndex << " " << vertices[neiIndex1].newIndex << " " << vertices[neiIndex2].newIndex << std::endl;
+                            //}
                         }
                     }
                 }
@@ -185,8 +185,9 @@ void Mesh::simplify() {
 
     int nowCount = faceCount;
     int iter = 0;
+    Face temp;
     while ((double)nowCount > (double)faceCount * rate) {
-        if (iter % 100 == 0) {
+        if (iter % 1000 == 0) {
             std::cout << "[info] Iter: " << iter << " count: " << nowCount << std::endl;
         }
         int pairIndex = heap.top();
@@ -199,16 +200,44 @@ void Mesh::simplify() {
         nowCount -= 2;
         iter++;
     }
+
 }
 
 void Mesh::update(const Pair& pair) {
     //optimize: use v[0] to store new vertex
     Vec3 newPos = pair.optimalPos();
+    for (int i = 0; i < vertices[pair.v[0]].neighbor.size(); ++i) {
+        for (int j = i + 1; j < vertices[pair.v[0]].neighbor.size(); ++j) {
+            int neiIndex1 = vertices[pair.v[0]].neighbor[i];
+            int neiIndex2 = vertices[pair.v[0]].neighbor[j];
+            Face realFace;
+            int b = faceMap.get(Face(pair.v[0], neiIndex1, neiIndex2), realFace);
+            if (b) {
+                Vec3 originNorm = realFace.norm(vertices);
+                Vec3 p0 = vertices[realFace.indices[0]].p;
+                Vec3 p1 = vertices[realFace.indices[1]].p;
+                Vec3 p2 = vertices[realFace.indices[2]].p;
+                if (realFace.indices[0] == pair.v[0]) p0 = newPos;
+                else if (realFace.indices[1] == pair.v[0]) p1 = newPos;
+                else p2 = newPos;
+                Vec3 newNorm = (p1 - p0).cross(p2 - p0).normal();
+                if (originNorm.dot(newNorm) < -0.9) {
+                    vertices[pair.v[0]].delPair(pair.index);
+                    vertices[pair.v[1]].delPair(pair.index);
+                    return;
+                }
+            }
+        }
+    }
+
     int newIndex = pair.v[0];
+    Vec3 originPos = vertices[newIndex].p;
     vertices[newIndex].setPos(newPos);
-    vertices[newIndex].Q += vertices[pair.v[1]].Q;
+
 
     /* update faces*/
+    std::vector<Face> realFaceV;
+    std::vector<Face> newFaceV;
     for (int i = 0; i < vertices[pair.v[1]].neighbor.size(); ++i) {
         for (int j = i + 1; j < vertices[pair.v[1]].neighbor.size(); ++j) {
             int neiIndex1 = vertices[pair.v[1]].neighbor[i];
@@ -216,17 +245,31 @@ void Mesh::update(const Pair& pair) {
             Face realFace;
             int b = faceMap.get(Face(pair.v[1], neiIndex1, neiIndex2), realFace);
             if (b) {
-                int bb = faceMap.remove(realFace);
-                assert(bb);
-                if (realFace.indices[0] == pair.v[1]) realFace.indices[0] = pair.v[0];
-                else if (realFace.indices[1] == pair.v[1]) realFace.indices[1] = pair.v[0];
-                else if (realFace.indices[2] == pair.v[1]) realFace.indices[2] = pair.v[0];
+                Face newFace = realFace;
+                if (realFace.indices[0] == pair.v[1]) newFace.indices[0] = pair.v[0];
+                else if (realFace.indices[1] == pair.v[1]) newFace.indices[1] = pair.v[0];
+                else if (realFace.indices[2] == pair.v[1]) newFace.indices[2] = pair.v[0];
                 else assert(0 == 1);
-                faceMap.insert(realFace);
+                Vec3 n0 = realFace.norm(vertices);
+                Vec3 n = newFace.norm(vertices);
+                if (n.dot(n0) > -0.9) {
+                    realFaceV.push_back(realFace);
+                    newFaceV.push_back(newFace);
+                }
+                else {
+                    vertices[pair.v[0]].setPos(originPos);
+                    vertices[pair.v[0]].delPair(pair.index);
+                    vertices[pair.v[1]].delPair(pair.index);
+                    return;
+                }
             }
         }
     }
-
+    for (int i = 0; i < realFaceV.size(); ++i) {
+        int bb = faceMap.remove(realFaceV[i]);
+        assert(bb);
+        faceMap.insert(newFaceV[i]);
+    }
 
     /* get new neighbor */
     for (int i = 0; i < vertices[pair.v[1]].neighbor.size(); ++i) {
@@ -284,6 +327,7 @@ void Mesh::update(const Pair& pair) {
     }
 
     //update cost & optimal pos
+    vertices[newIndex].Q += vertices[pair.v[1]].Q;
     for (int i = 0; i < vertices[newIndex].pairs.size(); ++i) {
         int pairIndex = vertices[newIndex].pairs[i];
         pairs[pairIndex].updateOptiPos(vertices);

@@ -6,9 +6,9 @@ LDLIBS = $(LDFLAGS)
 
 
 TARGETS = main
-OBJECTS = main.o mesh.o vertex.o face.o heap.o mat4.o pair.o vec3.o vec4.o map.o
+OBJECTS = main.o mesh.o vertex.o face.o heap.o mat4.o pair.o vec3.o vec4.o map.o utils.o
 HEADERS = mesh.h vertex.h
-HPPS = vec3.hpp vec4.hpp pair.hpp mat4.hpp heap.hpp face.hpp map.hpp
+HPPS = vec3.hpp vec4.hpp pair.hpp mat4.hpp heap.hpp face.hpp map.hpp utils.hpp
 
 .PHONY: default
 default: all
