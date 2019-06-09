@@ -11,6 +11,7 @@
 #include "pair.hpp"
 #include "mat4.hpp"
 #include "map.hpp"
+#include "kdtree.hpp"
 
 class Mesh {
 private:
@@ -20,13 +21,14 @@ private:
     Pair* pairs;
     Map faceMap;
     Heap heap;
+    Kdtree tree;
     int fOffset;
     int vOffset;
     int pOffset;
     int faceCount;
     int vertexCount;
-    double t; //see the paper
     double rate;
+    double t;
     //std::vector<int> freePos;
     bool* valid;
     bool* inPair;
@@ -47,7 +49,7 @@ public:
     void load(const std::string& path);
     void save(const std::string& path);
     double eval();
-    void setRate(double rate) { this->rate = rate; }
+    void setRate(double rate, double t) { this->rate = rate; this->t = t;}
     void simplify();
 };
 

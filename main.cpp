@@ -6,7 +6,7 @@
 
 
 int main(int argc, char** argv) {
-    if (argc != 4) {
+    if (argc != 5) {
         std::cout << "Error" << std::endl;
         return 1;
     }
@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
     Mesh mesh;
     mesh.load(argv[1]);
     std::cout << "[info] Load end" << std::endl;
-    mesh.setRate(atof(argv[3]));
+    mesh.setRate(atof(argv[3]), atof(argv[4]));
     std::cout << "[info] Set rate end" << std::endl;
     mesh.simplify();
     std::cout << "[info] Simplify end" << std::endl;

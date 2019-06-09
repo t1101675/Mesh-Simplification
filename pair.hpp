@@ -23,6 +23,15 @@ public:
         v[0] = v[1] = 0;
     }
 
+    Pair(int v0, int v1) {
+        cost = 0.0;
+        optPos = Vec3();
+        heapIndex = 0;
+        index = 0;
+        v[0] = v0;
+        v[1] = v1;
+    }
+
     Vec3 optimalPos() const {
         return optPos;
     }

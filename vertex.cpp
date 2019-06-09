@@ -31,13 +31,25 @@ void Vertex::delNeighbor(int index) {
             return;
         }
     }
-    assert(0 == 1);
+    //assert(0 == 1);
 }
 
 bool Vertex::hasPair(int index, const Pair* pairs) const {
     for (int i = 0; i < this->pairs.size(); ++i) {
         if (((pairs[index].v[0] == pairs[this->pairs[i]].v[0]) && (pairs[index].v[1] == pairs[this->pairs[i]].v[1])) 
          || ((pairs[index].v[0] == pairs[this->pairs[i]].v[1]) && (pairs[index].v[1] == pairs[this->pairs[i]].v[0]))) 
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Vertex::hasPair(const Pair& pair, const Pair* pairs) const {
+    for (int i = 0; i < this->pairs.size(); ++i)
+    {
+        if (((pair.v[0] == pairs[this->pairs[i]].v[0]) && (pair.v[1] == pairs[this->pairs[i]].v[1])) 
+        || ((pair.v[0] == pairs[this->pairs[i]].v[1]) && (pair.v[1] == pairs[this->pairs[i]].v[0])))
         {
             return true;
         }

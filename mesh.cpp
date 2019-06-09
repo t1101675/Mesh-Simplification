@@ -8,7 +8,6 @@
 #include <sstream>
 #include <stdlib.h>
 
-
 #include "mesh.h"
 
 Mesh::Mesh() {
@@ -21,8 +20,8 @@ Mesh::Mesh() {
     fOffset = 0;
     faceCount = 0;
     vertexCount = 0;    
-    t = 0;
     rate = 1.0;
+    t = 0.0;
     valid = new bool[MAX_VERTEX];
     inPair = new bool[MAX_VERTEX];
     inFace = new bool[MAX_VERTEX];
@@ -83,7 +82,6 @@ void Mesh::save(const std::string& path) {
             ++vNum;
         }
     }
-    std::cout << vNum << " " << vertexCount << std::endl;
     assert(vNum == vertexCount);
     for (int index = 1; index < vOffset; ++index) {
         if (valid[index]) {
@@ -110,6 +108,7 @@ void Mesh::save(const std::string& path) {
             inFace[index] = true;
         }
     }
+    std::cout << "[info] " << vNum << " vertices, " << fNum << " faces after simplification. " << std::endl;
     fout << "# " << vNum << " vertices, " << fNum << " faces" << std::endl;
     fout << sstream.str();
     fout.close();
@@ -167,13 +166,15 @@ int Mesh::addPair(int v1, int v2) {
 }
 
 void Mesh::computeQ() {
-    std::cout << vertexCount << std::endl;
     for (int index = 1; index < vOffset; ++index) {
         vertices[index].computeQ(vertices);
     }
 }
 
 void Mesh::computeValidPairs() {
+    std::cout << "[info] Building kdTree" << std::endl; 
+    tree.buildTree(vertices, vOffset, t);
+    std::cout << "[info] Kdtree build end" << std::endl;
     for (int index = 1; index < vOffset; ++index) {
         for (int i = 0; i < vertices[index].neighbor.size(); ++i) {
             int neighborIndex = vertices[index].neighbor[i];
@@ -183,16 +184,25 @@ void Mesh::computeValidPairs() {
                 pairs[pairIndex].updateCost(vertices);
             }
         }
-        // there may also be |v1 - v2| < t
+        std::vector<int> v_hit;
+        tree.query(tree.root, vertices[index].p, v_hit, t);
+        for (int k = 0; k < v_hit.size(); ++k) {
+            if ((v_hit[k] != index) &&  !inPair[v_hit[k]] && !vertices[index].hasPair(Pair(index, v_hit[k]), pairs)) {
+                int pairIndex = addPair(index, v_hit[k]);
+                pairs[pairIndex].updateOptiPos(vertices);
+                pairs[pairIndex].updateCost(vertices);
+            }
+        }
         inPair[index] = true;
     }
 }
 
 void Mesh::simplify() {
+    std::cout << "[info] " << vOffset << " vertices, " << fOffset << " faces in all." << std::endl;
     computeQ();
     std::cout << "[info] Compute Q end" << std::endl;
     computeValidPairs();
-    std::cout << "[info] Compute valid pairs end" << std::endl;
+    std::cout << "[info] Compute valid pairs end. " << pOffset << " pairs in all." << std::endl;
     heap.build(pairs, pOffset);
     std::cout << "[info] Heap build end" << std::endl;
 
@@ -234,7 +244,7 @@ void Mesh::update(const Pair& pair) {
                 else if (realFace.indices[1] == pair.v[0]) p1 = newPos;
                 else p2 = newPos;
                 Vec3 newNorm = (p1 - p0).cross(p2 - p0).normal();
-                if (originNorm.dot(newNorm) < -0.9) {
+                if (originNorm.dot(newNorm) < INVERSE_LIMIT) {
                     vertices[pair.v[0]].delPair(pair.index);
                     vertices[pair.v[1]].delPair(pair.index);
                     return;
@@ -265,7 +275,7 @@ void Mesh::update(const Pair& pair) {
                 else assert(0 == 1);
                 Vec3 n0 = realFace.norm(vertices);
                 Vec3 n = newFace.norm(vertices);
-                if (n.dot(n0) > -0.9) {
+                if (n.dot(n0) > INVERSE_LIMIT) {
                     realFaceV.push_back(realFace);
                     newFaceV.push_back(newFace);
                 }
