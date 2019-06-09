@@ -15,9 +15,12 @@
 class Mesh {
 private:
     Vertex* vertices;
+    Vec3* originVertices;
+    Face* originFace;
     Pair* pairs;
     Map faceMap;
     Heap heap;
+    int fOffset;
     int vOffset;
     int pOffset;
     int faceCount;
@@ -43,6 +46,7 @@ public:
     ~Mesh();
     void load(const std::string& path);
     void save(const std::string& path);
+    double eval();
     void setRate(double rate) { this->rate = rate; }
     void simplify();
 };

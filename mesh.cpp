@@ -6,6 +6,7 @@
 #include <memory.h>
 #include <string>
 #include <sstream>
+#include <stdlib.h>
 
 
 #include "mesh.h"
@@ -13,8 +14,11 @@
 Mesh::Mesh() {
     vertices = new Vertex[MAX_VERTEX];
     pairs = new Pair[MAX_PAIR];
+    originVertices = new Vec3[MAX_VERTEX];
+    originFace = new Face[MAX_FACE];
     vOffset = 1;
     pOffset = 0;
+    fOffset = 0;
     faceCount = 0;
     vertexCount = 0;    
     t = 0;
@@ -33,6 +37,8 @@ Mesh::~Mesh() {
     if (inFace) delete[] inFace;
     if (vertices) delete[] vertices;
     if (pairs) delete[] pairs;
+    if (originVertices) delete[] originVertices;
+    if (originFace) delete[] originFace;
 }
 
 void Mesh::load(const std::string& path) {
@@ -109,9 +115,14 @@ void Mesh::save(const std::string& path) {
     fout.close();
 }
 
+double Mesh::eval() {
+    
+}
+
 int Mesh::addVertex(const Vec3& p) {
     int index = vOffset;
     vertices[vOffset].setPos(p);
+    originVertices[vOffset] = p;
     valid[vOffset] = true;
     ++vOffset;
     ++vertexCount;
@@ -138,6 +149,8 @@ void Mesh::addFace(const Face& f) {
         }
     }
     faceMap.insert(f);
+    originFace[fOffset] = f;
+    ++fOffset;
     ++faceCount;
 }
 
