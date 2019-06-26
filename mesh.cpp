@@ -51,13 +51,13 @@ void Mesh::load(const std::string& path) {
     while (!fin.eof()) {
         fin.getline(line, 1000);
         type = line[0];
-        if (type == 'v') {
+        if ((type == 'v') && (line[1] == ' ')) {
             double x = 0, y = 0, z = 0;
             sscanf(line, "%c%lf%lf%lf", &type, &x, &y, &z);
             Vec3 p(x, y, z);
             addVertex(p);
         }
-        else if (type == 'f'){
+        else if ((type == 'f') && (line[1] == ' ')) {
             int indices[3];
             sscanf(line, "%c%d%d%d", &type, &indices[0], &indices[1], &indices[2]);
             Face f(indices);
@@ -219,14 +219,16 @@ void Mesh::simplify() {
         }
         Pair minPair = pairs[heap.top()];
         heap.del();
-        update(minPair);
-        nowCount -= 2;
+        bool b = update(minPair);
+        if (b) {
+            nowCount -= 2;
+        }
         iter++;
     }
 
 }
 
-void Mesh::update(const Pair& pair) {
+bool Mesh::update(const Pair& pair) {
     //optimize: use v[0] to store new vertex
     Vec3 newPos = pair.optimalPos();
     for (int i = 0; i < vertices[pair.v[0]].neighbor.size(); ++i) {
@@ -247,7 +249,7 @@ void Mesh::update(const Pair& pair) {
                 if (originNorm.dot(newNorm) < INVERSE_LIMIT) {
                     vertices[pair.v[0]].delPair(pair.index);
                     vertices[pair.v[1]].delPair(pair.index);
-                    return;
+                    return false;
                 }
             }
         }
@@ -283,7 +285,7 @@ void Mesh::update(const Pair& pair) {
                     vertices[pair.v[0]].setPos(originPos);
                     vertices[pair.v[0]].delPair(pair.index);
                     vertices[pair.v[1]].delPair(pair.index);
-                    return;
+                    return false;
                 }
             }
         }
@@ -358,4 +360,5 @@ void Mesh::update(const Pair& pair) {
         heap.update(pairs[pairIndex]);
     }
     delVertex(pair.v[1]);
+    return true;
 }

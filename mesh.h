@@ -41,7 +41,7 @@ private:
     int addPair(int v1, int v2);
     void delVertex(int index);
     void addFace(const Face& f);
-    void update(const Pair& pair);
+    bool update(const Pair& pair);
 
 public:
     Mesh();
