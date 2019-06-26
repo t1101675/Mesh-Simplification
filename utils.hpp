@@ -9,7 +9,7 @@ const int MAX_HEAP_NODE = 5000000;
 const int MAX_FACE = 3 * MAX_VERTEX;
 const int P = 131313;
 const int EVAL_COUNT = 100;
-const double INVERSE_LIMIT = -0.9;
+const double INVERSE_LIMIT = -0.7;
 
 inline double maxd(double d1, double d2) { return d1 < d2 ? d2 : d1; }
 inline double mind(double d1, double d2) { return d1 < d2 ? d1 : d2; }

@@ -48,6 +48,7 @@ void Mesh::load(const std::string& path) {
     }
     char line[1000];
     char type;
+    std::vector<Face> faceBuff;
     while (!fin.eof()) {
         fin.getline(line, 1000);
         type = line[0];
@@ -58,16 +59,34 @@ void Mesh::load(const std::string& path) {
             addVertex(p);
         }
         else if ((type == 'f') && (line[1] == ' ')) {
+            //std::cout << line << std::endl;
+            std::stringstream lineParser(line);
             int indices[3];
-            sscanf(line, "%c%d%d%d", &type, &indices[0], &indices[1], &indices[2]);
+            std::string indicesBuff[3];
+            //sscanf(line, "%c %s %s %s", &type, indicesBuff[0], indicesBuff[1], indicesBuff[2]);
+            lineParser >> type >> indicesBuff[0] >> indicesBuff[1] >> indicesBuff[2];
+            //std::cout << type << " " << indicesBuff[0] << " " << indicesBuff[1] << " " << indicesBuff[2] << std::endl;
+            for (int i = 0; i < 3; ++i) {
+                std::stringstream parser(indicesBuff[i]);
+                std::string temp;
+                getline(parser, temp, '/');
+                std::stringstream convert(temp);
+                convert >> indices[i];
+            }
             Face f(indices);
-            addFace(f);
+            faceBuff.push_back(f);
+            //addFace(f);
+            //std::cout << indices[0] << " " << indices[1] << " " << indices[2] << std::endl;
         }
         else {
             //type == '#'
         }
     }
     fin.close();
+    //std::cout << "OK" << std::endl;
+    for (auto f : faceBuff) {
+        addFace(f);
+    }
 }
 
 void Mesh::save(const std::string& path) {
