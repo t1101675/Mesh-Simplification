@@ -9,9 +9,10 @@
 struct HeapNode {
     int index;
     double cost;
+    double cost1;
     bool exist;
     friend bool operator< (const HeapNode& n1, const HeapNode& n2) {
-        return n1.cost < n2.cost;
+        return (n1.cost < n2.cost) || ((std::abs(n1.cost - n2.cost) < 1e-5) && (n1.cost1 < n2.cost1));
     }
     HeapNode(): index(0), exist(0) {}
 };
@@ -36,8 +37,6 @@ private:
                 return i;
             }
             else {
-                //std::cout << i << " " << data[i].exist << " " << pairs[data[i].index].heapIndex << std::endl;
-                //std::cout << j << " " << data[j].exist << " " << pairs[data[j].index].heapIndex << std::endl;
                 HeapNode temp = data[i]; data[i] = data[j]; data[j] = temp;
                 if (data[i].exist) {
                     assert(pairs[data[i].index].heapIndex == j);
@@ -97,6 +96,7 @@ public:
         this->pairNum = n;
         for (int i = 0; i < n; ++i) {
             data[i].cost = pairs[i].cost;
+            data[i].cost1 = pairs[i].cost1;
             data[i].index = i;
             data[i].exist = true;
         }
@@ -111,15 +111,12 @@ public:
         assert(0 < n);
         assert(n < MAX_HEAP_NODE);
         data[n].cost = pair.cost;
+        data[n].cost1 = pair.cost1;
         data[n].index = pair.index;
         data[n].exist = true;
         pair.heapIndex = n;
         ++n;
         int temp = up(n - 1);
-        //if (pair.index == 55032)
-        //{
-        //    std::cout << pairs[55032].heapIndex << " ssssss heap index " << data[pairs[55032].heapIndex].exist << std::endl;
-        //}
 
         return temp;
 
@@ -129,20 +126,14 @@ public:
         if (data[0].exist) {
             --pairNum;
         }
-        //std::cout << "before " << data[0].index << std::endl;
         data[0] = data[--n];
-        //std::cout << "after " << data[0].index << std::endl;
         if (data[0].exist) {
-            //std::cout << pairs[data[0].index].heapIndex << " " << n - 1 << std::endl;
             assert(pairs[data[0].index].heapIndex == n);
             pairs[data[0].index].heapIndex = 0;
         }
         down(0);
     }
     void remove(const Pair& pair) {
-        //if (pair.index == 55032) {
-        //    std::cout << "qaaaaaaaaaaa " << data[pair.heapIndex].index << " " << pair.heapIndex << std::endl;
-        //}
         assert(data[pair.heapIndex].exist == true);
         data[pair.heapIndex].exist = false;
         --pairNum;
@@ -150,7 +141,6 @@ public:
     void update(Pair& pair) {
         data[pair.heapIndex].exist = false;
         add(pair);
-        //std::cout << "exist " << data[0].exist << " " << data[0].index << std::endl;
     }
     int top() {
         while (0 < n && !data[0].exist) {

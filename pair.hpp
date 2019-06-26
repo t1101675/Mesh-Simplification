@@ -11,6 +11,7 @@ private:
     Vec3 optPos;
 public:
     double cost;
+    double cost1;
     int heapIndex;
     int index;
     int v[2];
@@ -112,7 +113,8 @@ public:
         Vec4 y(optPos, 1.0);
         Mat4 A = vertices[v[0]].Q + vertices[v[1]].Q;
         Vec4 Ay = A * y;
-        cost = y.dot(Ay);   
+        cost = y.dot(Ay);  
+        cost1 = vertices[v[0]].p.squareDistance(vertices[v[1]].p); 
     }
 
     friend bool operator< (const Pair& p1, const Pair& p2) {

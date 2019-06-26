@@ -59,13 +59,10 @@ void Mesh::load(const std::string& path) {
             addVertex(p);
         }
         else if ((type == 'f') && (line[1] == ' ')) {
-            //std::cout << line << std::endl;
             std::stringstream lineParser(line);
             int indices[3];
             std::string indicesBuff[3];
-            //sscanf(line, "%c %s %s %s", &type, indicesBuff[0], indicesBuff[1], indicesBuff[2]);
             lineParser >> type >> indicesBuff[0] >> indicesBuff[1] >> indicesBuff[2];
-            //std::cout << type << " " << indicesBuff[0] << " " << indicesBuff[1] << " " << indicesBuff[2] << std::endl;
             for (int i = 0; i < 3; ++i) {
                 std::stringstream parser(indicesBuff[i]);
                 std::string temp;
@@ -75,15 +72,12 @@ void Mesh::load(const std::string& path) {
             }
             Face f(indices);
             faceBuff.push_back(f);
-            //addFace(f);
-            //std::cout << indices[0] << " " << indices[1] << " " << indices[2] << std::endl;
         }
         else {
             //type == '#'
         }
     }
     fin.close();
-    //std::cout << "OK" << std::endl;
     for (auto f : faceBuff) {
         addFace(f);
     }
