@@ -49,20 +49,16 @@ public:
     }
 
     int buildLayer(int* indices, int l, int r, int dim, double t) {
-        //std::cout << offset << " " << l << " " << r << std::endl;
         if (l >= r) return 0;
         int mid = (l + r) >> 1;
-        //assert(mid < viewPoints.size() && 0 <= mid);
         std::nth_element(indices + l, indices + mid, indices + r, VertexCmp(dim, vB));
         int tIndex = offset;
         ++offset;
-        //std::cout << dim << std::endl;
         int midIndex = indices[mid];
         nodes[tIndex].index = midIndex;
         nodes[tIndex].dim = dim;
         nodes[tIndex].maxBound = vB[midIndex].p + t;
         nodes[tIndex].minBound = vB[midIndex].p - t;
-        //std::cout <<  nodes[tIndex].maxBound.x << " " << nodes[tIndex].maxBound.y << " " << nodes[tIndex].maxBound.z << std::endl;
         nodes[tIndex].left = buildLayer(indices, l, mid, (dim + 1) % 3, t);
         if (nodes[tIndex].left) {
             nodes[tIndex].maxBound = eachMax(nodes[nodes[tIndex].left].maxBound, nodes[tIndex].maxBound);
