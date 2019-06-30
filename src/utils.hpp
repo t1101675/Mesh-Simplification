@@ -4,7 +4,7 @@
 #include "vec3.hpp"
 
 const int MAX_VERTEX = 500000;
-const int MAX_PAIR = 5000000;
+const int MAX_PAIR = 50000000;
 const int MAX_HEAP_NODE = 5000000;
 const int MAX_FACE = 3 * MAX_VERTEX;
 const int P = 131313;
@@ -17,4 +17,4 @@ inline double mind(double d1, double d2) { return d1 < d2 ? d1 : d2; }
 inline Vec3 eachMax(const Vec3 &v1, const Vec3 &v2) { return Vec3(maxd(v1.x, v2.x), maxd(v1.y, v2.y), maxd(v1.z, v2.z)); }
 inline Vec3 eachMin(const Vec3 &v1, const Vec3 &v2) { return Vec3(mind(v1.x, v2.x), mind(v1.y, v2.y), mind(v1.z, v2.z)); }
 
-#endif 
+#endif `
