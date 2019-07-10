@@ -1,10 +1,10 @@
 # Mesh Simplification
 
-#### by gyx
+#### by gyx THUCST
 
 ## 1 Introduction
 
-A implementation of the paper *Surface Simplification Using Quadric Error Metrics*.
+An implementation of the paper *Surface Simplification Using Quadric Error Metrics*.
 
 ## 2 Quick Start
 
