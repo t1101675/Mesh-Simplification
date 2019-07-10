@@ -110,10 +110,6 @@ void Mesh::save(const std::string& path) {
                             if (b) {
                                 sstream << "f " << vertices[realFace.indices[0]].newIndex << " " << vertices[realFace.indices[1]].newIndex << " " << vertices[realFace.indices[2]].newIndex << std::endl;
                             }
-                            //else {
-                            //    std::cout << index << " " << neiIndex1 << " " << neiIndex2 << std::endl;
-                            //    sstream << "f " << vertices[index].newIndex << " " << vertices[neiIndex1].newIndex << " " << vertices[neiIndex2].newIndex << std::endl;
-                            //}
                         }
                     }
                 }
@@ -331,7 +327,6 @@ bool Mesh::update(const Pair& pair) {
                 //pair between v[0] and v[1]
                 assert(pairIndex == pair.index);
                 vertices[newIndex].delPair(pairIndex);
-                //heap.remove(pairs[pairIndex]); //this pair has already been removed
                 continue;
             }
             else {

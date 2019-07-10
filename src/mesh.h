@@ -29,7 +29,6 @@ private:
     int vertexCount;
     double rate;
     double t;
-    //std::vector<int> freePos;
     bool* valid;
     bool* inPair;
     bool* inFace;

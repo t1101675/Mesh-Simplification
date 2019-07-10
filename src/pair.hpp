@@ -45,14 +45,6 @@ public:
         A.set(3, 2, 0.0);
         A.set(3, 3, 1.0);
         Vec4 Y(0.0, 0.0, 0.0, 1.0);
-        //if (this->index == 65425) {
-        //    for (int i = 0; i < 4; ++i) {
-        //        for (int j = 0; j < 4; ++j) {
-        //            std::cout << A.get(i, j) << " ";
-        //        }
-        //        std::cout << std::endl;
-        //    }
-        //}
         for (int i = 0; i < 4; ++i) {
             A.set(i, 3, -A.get(i, 3));
         }
@@ -73,17 +65,6 @@ public:
                     }
                 }
             }
-            //if (this->index == 65425)
-            //{
-            //    for (int i = 0; i < 4; ++i)
-            //    {
-            //        for (int j = 0; j < 4; ++j)
-            //        {
-            //            std::cout << A.get(i, j) << " ";
-            //        }
-            //        std::cout << std::endl;
-            //    }
-            //}
         }
 
         for(int i = 0; i < 3; ++i) {
@@ -104,9 +85,6 @@ public:
 	    optPos.x = index[0];
 	    optPos.y = index[1];
 	    optPos.z = index[2];
-        //if (this->index == 65425) {
-        //    std::cout << "opti pos " << optPos.x << " " << optPos.y << " " << optPos.z << std::endl;
-        //}
     }
 
     void updateCost(const Vertex* vertices) {
